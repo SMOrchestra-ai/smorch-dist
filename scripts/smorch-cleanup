@@ -1,21 +1,16 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
 # smorch-cleanup — Remove duplicate skills from Claude machines
 # Run on each server/team machine before first sync to deduplicate
 # skills that exist both as standalone files and inside plugins.
+# Works on: macOS (bash 3.2+), Linux, Windows (Git Bash)
 
 # --- Prerequisite checks ---
-check_prereqs() {
-    local missing=()
-    command -v git &>/dev/null || missing+=("git")
-    if [ ${#missing[@]} -gt 0 ]; then
-        echo -e "\033[0;31mERROR: Missing required tools: ${missing[*]}\033[0m"
-        echo "Install them before running this script."
-        exit 1
-    fi
+command -v git >/dev/null 2>&1 || {
+    echo -e "\033[0;31mERROR: git is required but not installed.\033[0m"
+    exit 1
 }
-check_prereqs
 
 VERSION="1.0.0"
 SKILLS_DIR="$HOME/.claude/skills"
@@ -75,8 +70,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Collect duplicate skills (exist in both skills/ and plugins/)
-declare -a SKILL_DUPES=()
-declare -a OVERSIZED_COMMANDS=()
+# Using simple arrays (bash 3.2 compatible — no declare -A or read -d)
+SKILL_DUPES=()
+OVERSIZED_COMMANDS=()
 
 find_skill_duplicates() {
     log_header "Scanning for duplicate skills"
@@ -91,22 +87,26 @@ find_skill_duplicates() {
         return
     fi
 
-    # Build list of all skill filenames inside plugins
-    declare -A plugin_skills
-    while IFS= read -r -d '' pfile; do
-        local basename
-        basename=$(basename "$pfile")
-        plugin_skills["$basename"]=1
-    done < <(find "$PLUGINS_DIR" -type f -name "*.md" -print0 2>/dev/null || true)
+    # Build newline-separated list of plugin skill basenames
+    local plugin_names
+    plugin_names=$(find "$PLUGINS_DIR" -type f -name "*.md" 2>/dev/null | while read -r pfile; do
+        basename "$pfile"
+    done | sort -u)
 
     # Check each skill against plugin contents
-    while IFS= read -r -d '' sfile; do
-        local basename
-        basename=$(basename "$sfile")
-        if [[ -n "${plugin_skills[$basename]:-}" ]]; then
-            SKILL_DUPES+=("$sfile")
+    find "$SKILLS_DIR" -type f -name "*.md" 2>/dev/null | while read -r sfile; do
+        local bname
+        bname=$(basename "$sfile")
+        if echo "$plugin_names" | grep -qx "$bname" 2>/dev/null; then
+            echo "$sfile"
         fi
-    done < <(find "$SKILLS_DIR" -type f -name "*.md" -print0 2>/dev/null || true)
+    done > /tmp/smorch-cleanup-dupes.$$ 2>/dev/null || true
+
+    while read -r f; do
+        [[ -z "$f" ]] && continue
+        SKILL_DUPES+=("$f")
+    done < /tmp/smorch-cleanup-dupes.$$ 2>/dev/null || true
+    rm -f /tmp/smorch-cleanup-dupes.$$
 
     if [[ ${#SKILL_DUPES[@]} -eq 0 ]]; then
         log_success "No duplicate skills found"
@@ -126,13 +126,19 @@ find_oversized_commands() {
         return
     fi
 
-    while IFS= read -r -d '' cfile; do
+    find "$COMMANDS_DIR" -type f 2>/dev/null | while read -r cfile; do
         local lines
-        lines=$(wc -l < "$cfile")
+        lines=$(wc -l < "$cfile" | tr -d ' ')
         if [[ $lines -gt 50 ]]; then
-            OVERSIZED_COMMANDS+=("$cfile")
+            echo "$cfile"
         fi
-    done < <(find "$COMMANDS_DIR" -type f -print0 2>/dev/null || true)
+    done > /tmp/smorch-cleanup-cmds.$$ 2>/dev/null || true
+
+    while read -r f; do
+        [[ -z "$f" ]] && continue
+        OVERSIZED_COMMANDS+=("$f")
+    done < /tmp/smorch-cleanup-cmds.$$ 2>/dev/null || true
+    rm -f /tmp/smorch-cleanup-cmds.$$
 
     if [[ ${#OVERSIZED_COMMANDS[@]} -eq 0 ]]; then
         log_success "No oversized commands found"
@@ -140,7 +146,7 @@ find_oversized_commands() {
         log_warn "Found ${#OVERSIZED_COMMANDS[@]} oversized command(s):"
         for f in "${OVERSIZED_COMMANDS[@]}"; do
             local lines
-            lines=$(wc -l < "$f")
+            lines=$(wc -l < "$f" | tr -d ' ')
             echo -e "  ${YELLOW}-${NC} $(basename "$f")  ${CYAN}(${lines} lines)${NC}"
         done
     fi

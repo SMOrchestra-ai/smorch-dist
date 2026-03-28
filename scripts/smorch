@@ -1,13 +1,25 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
 # smorch (distribution) — SMOrchestra Skill Installer
 # This is the team version. Source management commands are not available.
+# Works on: macOS (bash 3.2+), Linux, Windows (Git Bash)
 
 VERSION="2.0.0-dist"
 
-if [[ -d "$HOME/Desktop/cowork-workspace/smorch-dist" ]]; then
+# Prerequisite check
+command -v git >/dev/null 2>&1 || {
+    echo "ERROR: git is required but not installed. See: https://git-scm.com/downloads"
+    exit 1
+}
+
+# Auto-detect repo: env override → macOS typical → shared workspace → home → script parent
+if [[ -n "${SMORCH_WORKSPACE:-}" && -d "$SMORCH_WORKSPACE/smorch-dist" ]]; then
+    REPO_DIR="$SMORCH_WORKSPACE/smorch-dist"
+elif [[ -d "$HOME/Desktop/cowork-workspace/smorch-dist" ]]; then
     REPO_DIR="$HOME/Desktop/cowork-workspace/smorch-dist"
+elif [[ -d "$HOME/smorch-workspace/smorch-dist" ]]; then
+    REPO_DIR="$HOME/smorch-workspace/smorch-dist"
 elif [[ -d "$HOME/smorch-dist" ]]; then
     REPO_DIR="$HOME/smorch-dist"
 else
@@ -92,7 +104,15 @@ cmd_pull() {
         local failures=0
         while IFS='  ' read -r expected_hash filename; do
             [[ -z "$expected_hash" ]] && continue
-            local actual_hash=$(shasum -a 256 "$REPO_DIR/dist/$filename" 2>/dev/null | cut -d' ' -f1)
+            local actual_hash
+            if command -v shasum >/dev/null 2>&1; then
+                actual_hash=$(shasum -a 256 "$REPO_DIR/dist/$filename" 2>/dev/null | cut -d' ' -f1)
+            elif command -v sha256sum >/dev/null 2>&1; then
+                actual_hash=$(sha256sum "$REPO_DIR/dist/$filename" 2>/dev/null | cut -d' ' -f1)
+            else
+                echo -e "  ${YELLOW}WARN: No sha256 tool found, skipping integrity check${NC}"
+                break
+            fi
             if [[ "$expected_hash" != "$actual_hash" ]]; then
                 echo -e "  ${RED}INTEGRITY FAILURE: $filename${NC}"
                 failures=$((failures + 1))

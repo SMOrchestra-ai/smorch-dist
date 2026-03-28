@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# smorch-sync — Pull latest updates for all SMOrchestra repos
+# Works on: macOS, Linux, Windows (Git Bash)
+# Usage: bash scripts/smorch-sync
+#   OR:  Add to PATH and run: smorch-sync
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+# Auto-detect workspace directory (override with SMORCH_WORKSPACE env var)
+if [[ -n "${SMORCH_WORKSPACE:-}" && -d "$SMORCH_WORKSPACE" ]]; then
+    WORKSPACE="$SMORCH_WORKSPACE"
+elif [[ -d "$HOME/Desktop/cowork-workspace" ]]; then
+    WORKSPACE="$HOME/Desktop/cowork-workspace"
+elif [[ -d "$HOME/smorch-workspace" ]]; then
+    WORKSPACE="$HOME/smorch-workspace"
+elif [[ -d "$HOME/workspace" ]]; then
+    WORKSPACE="$HOME/workspace"
+else
+    echo -e "${RED}ERROR: Cannot find workspace directory.${NC}"
+    echo "Expected one of:"
+    echo "  ~/Desktop/cowork-workspace/"
+    echo "  ~/smorch-workspace/"
+    echo "  ~/workspace/"
+    exit 1
+fi
+
+echo -e "${CYAN}smorch-sync — Pulling latest from all repos${NC}"
+echo -e "Workspace: $WORKSPACE"
+echo "──────────────────────────────────"
+
+success=0
+failed=0
+
+for repo in "$WORKSPACE"/*/; do
+    [[ -d "$repo/.git" ]] || continue
+    name="$(basename "$repo")"
+
+    # Try main first, then dev
+    if git -C "$repo" pull origin main 2>/dev/null; then
+        echo -e "  ${GREEN}$name${NC} — synced (main)"
+        success=$((success + 1))
+    elif git -C "$repo" pull origin dev 2>/dev/null; then
+        echo -e "  ${GREEN}$name${NC} — synced (dev)"
+        success=$((success + 1))
+    else
+        echo -e "  ${RED}$name${NC} — FAILED (check auth or network)"
+        failed=$((failed + 1))
+    fi
+done
+
+echo "──────────────────────────────────"
+echo -e "Synced: ${GREEN}$success${NC}  |  Failed: ${RED}$failed${NC}"
+
+if [[ $failed -gt 0 ]]; then
+    echo -e "${YELLOW}Fix failed repos: cd into the repo and run 'git pull' to see the error.${NC}"
+fi
