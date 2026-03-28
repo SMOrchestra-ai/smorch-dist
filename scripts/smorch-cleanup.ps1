@@ -11,6 +11,12 @@ param(
 
 $ErrorActionPreference = "Continue"
 
+# Prerequisite check
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    Write-Host "[ERROR] git is required but not installed." -ForegroundColor Red
+    exit 1
+}
+
 $SkillsDir = "$env:USERPROFILE\.claude\skills"
 $PluginsDir = "$env:USERPROFILE\.claude\plugins"
 $CommandsDir = "$env:USERPROFILE\.claude\commands"

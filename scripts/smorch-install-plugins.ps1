@@ -11,6 +11,13 @@ param(
 
 $ErrorActionPreference = "Continue"
 
+# Prerequisite check
+if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
+    Write-Host "[ERROR] claude CLI is required but not installed." -ForegroundColor Red
+    Write-Host "Install Claude Code first: https://docs.anthropic.com/en/docs/claude-code"
+    exit 1
+}
+
 function Show-Help {
     Write-Host "smorch-install-plugins — Install plugins for your role" -ForegroundColor Cyan
     Write-Host ""

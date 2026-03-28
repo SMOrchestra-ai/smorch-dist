@@ -2,15 +2,31 @@
 set -eo pipefail
 
 # smorch-sync — Pull latest updates for all SMOrchestra repos
-# Works on: macOS, Linux, Windows (Git Bash)
-# Usage: bash scripts/smorch-sync
-#   OR:  Add to PATH and run: smorch-sync
+# Works on: macOS (bash 3.2+), Linux, Windows (Git Bash)
+# Usage: smorch-sync [--help]
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 RED='\033[0;31m'
 NC='\033[0m'
+
+# Help
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    echo "smorch-sync — Pull latest updates for all SMOrchestra repos"
+    echo ""
+    echo "Usage: smorch-sync [--help]"
+    echo ""
+    echo "Scans workspace for git repos and pulls latest from main (then dev)."
+    echo "Override workspace path: export SMORCH_WORKSPACE=/your/path"
+    exit 0
+fi
+
+# Prerequisite check
+command -v git >/dev/null 2>&1 || {
+    echo -e "${RED}[ERROR] git is required but not installed. See: https://git-scm.com/downloads${NC}"
+    exit 1
+}
 
 # Auto-detect workspace directory (override with SMORCH_WORKSPACE env var)
 if [[ -n "${SMORCH_WORKSPACE:-}" && -d "$SMORCH_WORKSPACE" ]]; then
@@ -22,11 +38,12 @@ elif [[ -d "$HOME/smorch-workspace" ]]; then
 elif [[ -d "$HOME/workspace" ]]; then
     WORKSPACE="$HOME/workspace"
 else
-    echo -e "${RED}ERROR: Cannot find workspace directory.${NC}"
+    echo -e "${RED}[ERROR] Cannot find workspace directory.${NC}"
     echo "Expected one of:"
     echo "  ~/Desktop/cowork-workspace/"
     echo "  ~/smorch-workspace/"
     echo "  ~/workspace/"
+    echo "Or set: export SMORCH_WORKSPACE=/your/path"
     exit 1
 fi
 
@@ -41,22 +58,26 @@ for repo in "$WORKSPACE"/*/; do
     [[ -d "$repo/.git" ]] || continue
     name="$(basename "$repo")"
 
-    # Try main first, then dev
-    if git -C "$repo" pull origin main 2>/dev/null; then
+    # Try main first, then dev — capture error for diagnostics
+    err_main=$(git -C "$repo" pull origin main 2>&1) && {
         echo -e "  ${GREEN}$name${NC} — synced (main)"
         success=$((success + 1))
-    elif git -C "$repo" pull origin dev 2>/dev/null; then
+        continue
+    }
+    err_dev=$(git -C "$repo" pull origin dev 2>&1) && {
         echo -e "  ${GREEN}$name${NC} — synced (dev)"
         success=$((success + 1))
-    else
-        echo -e "  ${RED}$name${NC} — FAILED (check auth or network)"
-        failed=$((failed + 1))
-    fi
+        continue
+    }
+    # Both failed — show the error
+    echo -e "  ${RED}$name${NC} — FAILED"
+    echo -e "    ${YELLOW}$err_dev${NC}"
+    failed=$((failed + 1))
 done
 
 echo "──────────────────────────────────"
 echo -e "Synced: ${GREEN}$success${NC}  |  Failed: ${RED}$failed${NC}"
 
 if [[ $failed -gt 0 ]]; then
-    echo -e "${YELLOW}Fix failed repos: cd into the repo and run 'git pull' to see the error.${NC}"
+    echo -e "${YELLOW}[WARN] Fix failed repos: cd into the repo and run 'git pull' to see full details.${NC}"
 fi

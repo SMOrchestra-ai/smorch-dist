@@ -5,6 +5,12 @@
 
 $ErrorActionPreference = "Continue"
 
+# Prerequisite check
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    Write-Host "[ERROR] git is required but not installed. See: https://git-scm.com/downloads" -ForegroundColor Red
+    exit 1
+}
+
 # Auto-detect workspace directory (override with SMORCH_WORKSPACE env var)
 $workspace = $null
 if ($env:SMORCH_WORKSPACE -and (Test-Path $env:SMORCH_WORKSPACE)) {
@@ -47,18 +53,19 @@ Get-ChildItem $workspace -Directory | ForEach-Object {
     # Check if it's a git repo
     if (-not (Test-Path "$repo\.git")) { return }
 
-    # Try main first, then dev
-    $null = git -C "$repo" pull origin main 2>&1
+    # Try main first, then dev — capture error for diagnostics
+    $errMain = git -C "$repo" pull origin main 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "  $name — synced (main)" -ForegroundColor Green
         $script:success++
     } else {
-        $null = git -C "$repo" pull origin dev 2>&1
+        $errDev = git -C "$repo" pull origin dev 2>&1
         if ($LASTEXITCODE -eq 0) {
             Write-Host "  $name — synced (dev)" -ForegroundColor Green
             $script:success++
         } else {
-            Write-Host "  $name — FAILED (check auth or network)" -ForegroundColor Red
+            Write-Host "  $name — FAILED" -ForegroundColor Red
+            Write-Host "    $errDev" -ForegroundColor Yellow
             $script:failed++
         }
     }
