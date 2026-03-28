@@ -1,0 +1,5 @@
+# Developer Profile
+# Cowork plugin: smorch-dev (1 plugin)
+# Claude Code: 7 official plugins (LSPs + code-review + frontend + github)
+# Context: EntrepreneurOasis + SalesMfastGTM
+# No standalone skills needed - all come from smorch-dev plugin + Code plugins
