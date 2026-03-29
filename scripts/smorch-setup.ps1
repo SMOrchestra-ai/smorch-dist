@@ -15,7 +15,7 @@ param(
 )
 
 $ErrorActionPreference = "Continue"
-$Version = "1.0.0"
+$Version = "2.0.0"
 $RepoUrl = "https://github.com/SMOrchestra-ai/smorch-dist.git"
 
 # --- Helpers ---
@@ -23,6 +23,17 @@ function Write-Info  { param([string]$Msg) Write-Host "[INFO] $Msg" -ForegroundC
 function Write-Ok    { param([string]$Msg) Write-Host "[OK] $Msg" -ForegroundColor Green }
 function Write-Warn  { param([string]$Msg) Write-Host "[WARN] $Msg" -ForegroundColor Yellow }
 function Write-Fail  { param([string]$Msg) Write-Host "[ERROR] $Msg" -ForegroundColor Red; exit 1 }
+
+# --- Role -> plugin mapping ---
+function Get-RolePlugins {
+    param([string]$RoleName)
+    switch ($RoleName) {
+        "gtm-eo"     { return @("smorch-context-brain", "smorch-gtm-tools", "smorch-gtm-engine", "smorch-design", "mamoun-personal-branding", "smorch-gtm-scoring", "eo-microsaas-os") }
+        "gtm-smo"    { return @("smorch-context-brain", "smorch-gtm-tools", "smorch-gtm-engine", "smorch-design", "mamoun-personal-branding", "smorch-gtm-scoring") }
+        "dev"        { return @("smorch-dev", "smorch-dev-scoring") }
+        "eo-student" { return @("eo-microsaas-os", "smorch-dev", "smorch-dev-scoring") }
+    }
+}
 
 # --- Detect workspace ---
 function Get-Workspace {
@@ -35,7 +46,6 @@ function Get-Workspace {
     $smarchWs = Join-Path $env:USERPROFILE "smorch-workspace"
     if (Test-Path $smarchWs) { return $smarchWs }
 
-    # Default: create on Desktop
     return $desktopWs
 }
 
@@ -50,10 +60,10 @@ function Show-Help {
     Write-Host "  .\smorch-setup.ps1 -Help             Show this help"
     Write-Host ""
     Write-Host "ROLES:" -ForegroundColor White
-    Write-Host "  gtm-eo       GTM-EO team (Cowork plugins only)"
-    Write-Host "  gtm-smo      GTM-SMO team (Cowork plugins only)"
-    Write-Host "  dev          Dev team (Cowork + 7 Claude Code tools)"
-    Write-Host "  eo-student   EO student (Cowork + 7 Claude Code tools)"
+    Write-Host "  gtm-eo       GTM-EO team (7 Cowork plugins)"
+    Write-Host "  gtm-smo      GTM-SMO team (6 Cowork plugins)"
+    Write-Host "  dev          Dev team (2 Cowork + 7 Code tools)"
+    Write-Host "  eo-student   EO student (3 Cowork + 7 Code tools)"
     Write-Host ""
     Write-Host "EXAMPLES:" -ForegroundColor White
     Write-Host "  .\smorch-setup.ps1 -Role gtm-eo"
@@ -157,14 +167,54 @@ function Step-Verify {
     Write-Ok "All $checked plugins verified (SHA-256)."
 }
 
-# --- Step 3: Install Claude Code plugins ---
-function Step-CodePlugins {
-    param([string]$Role)
-
-    if ($Role -ne "dev" -and $Role -ne "eo-student") { return }
+# --- Step 3: Build role-specific workspace ---
+function Step-BuildWorkspace {
+    param([string]$DistDir, [string]$RoleName, [string]$WorkspaceDir)
 
     Write-Host ""
-    Write-Host "--- Step 3: Install Claude Code Dev Tools ---" -ForegroundColor Cyan
+    Write-Host "--- Step 3: Build Role Workspace ---" -ForegroundColor Cyan
+
+    $rolePlugins = Get-RolePlugins $RoleName
+
+    # Create workspace directory
+    if (-not (Test-Path $WorkspaceDir)) {
+        New-Item -ItemType Directory -Path $WorkspaceDir -Force | Out-Null
+    }
+
+    # Clean existing plugin directories in workspace
+    $allSourcePlugins = Get-ChildItem -Path (Join-Path $DistDir "plugins") -Directory -ErrorAction SilentlyContinue
+    foreach ($srcPlugin in $allSourcePlugins) {
+        $targetPath = Join-Path $WorkspaceDir $srcPlugin.Name
+        if (Test-Path $targetPath) {
+            Remove-Item -Recurse -Force $targetPath
+        }
+    }
+
+    # Copy ONLY the role's plugins
+    $count = 0
+    foreach ($plugin in $rolePlugins) {
+        $src = Join-Path $DistDir "plugins\$plugin"
+        $dest = Join-Path $WorkspaceDir $plugin
+        if (Test-Path $src) {
+            Copy-Item -Recurse -Force $src $dest
+            Write-Host "  Installed: $plugin" -ForegroundColor Green
+            $count++
+        } else {
+            Write-Warn "Plugin not found: $plugin (skipping)"
+        }
+    }
+
+    Write-Ok "$count plugins installed for role '$RoleName'."
+}
+
+# --- Step 4: Install Claude Code plugins ---
+function Step-CodePlugins {
+    param([string]$RoleName)
+
+    if ($RoleName -ne "dev" -and $RoleName -ne "eo-student") { return }
+
+    Write-Host ""
+    Write-Host "--- Step 4: Install Claude Code Dev Tools ---" -ForegroundColor Cyan
 
     if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
         Write-Warn "Claude CLI not found. Skipping Code plugin install."
@@ -174,7 +224,7 @@ function Step-CodePlugins {
 
     Write-Host "  Language Servers:" -ForegroundColor Blue
     foreach ($p in @("typescript-lsp", "pyright-lsp", "rust-analyzer-lsp", "gopls-lsp")) {
-        Write-Host "  Installing ${p}@claude-plugins-official..." -ForegroundColor Blue
+        Write-Host "  Installing ${p}@claude-plugins-official..."
         $null = claude /plugin install "${p}@claude-plugins-official" 2>&1
         if ($LASTEXITCODE -eq 0) {
             Write-Host "    OK" -ForegroundColor Green
@@ -186,7 +236,7 @@ function Step-CodePlugins {
     Write-Host ""
     Write-Host "  Dev Tools:" -ForegroundColor Blue
     foreach ($p in @("code-review", "frontend-design", "github")) {
-        Write-Host "  Installing ${p}@claude-plugins-official..." -ForegroundColor Blue
+        Write-Host "  Installing ${p}@claude-plugins-official..."
         $null = claude /plugin install "${p}@claude-plugins-official" 2>&1
         if ($LASTEXITCODE -eq 0) {
             Write-Host "    OK" -ForegroundColor Green
@@ -198,20 +248,16 @@ function Step-CodePlugins {
     Write-Ok "Claude Code dev tools installed."
 }
 
-# --- Step 4: Cowork Desktop instructions ---
+# --- Step 5: Cowork Desktop instructions ---
 function Step-CoworkInstructions {
-    param([string]$DistDir, [string]$Role)
+    param([string]$WorkspaceDir, [string]$RoleName)
 
     Write-Host ""
-    Write-Host "--- Step 4: Connect to Cowork Desktop ---" -ForegroundColor Cyan
+    Write-Host "--- Step 5: Connect to Cowork Desktop ---" -ForegroundColor Cyan
     Write-Host ""
 
-    $plugins = switch ($Role) {
-        "gtm-eo"     { "smorch-context-brain, smorch-gtm-tools, smorch-gtm-engine, smorch-design, mamoun-personal-branding, smorch-gtm-scoring, eo-microsaas-os" }
-        "gtm-smo"    { "smorch-context-brain, smorch-gtm-tools, smorch-gtm-engine, smorch-design, mamoun-personal-branding, smorch-gtm-scoring" }
-        "dev"        { "smorch-dev, smorch-dev-scoring" }
-        "eo-student" { "eo-microsaas-os, smorch-dev, smorch-dev-scoring" }
-    }
+    $rolePlugins = Get-RolePlugins $RoleName
+    $pluginList = $rolePlugins -join ", "
 
     Write-Host "  To activate plugins in Cowork Desktop:" -ForegroundColor White
     Write-Host ""
@@ -219,30 +265,33 @@ function Step-CoworkInstructions {
     Write-Host "  2. Go to Customize > Workspace"
     Write-Host "  3. Set workspace path to:"
     Write-Host ""
-    Write-Host "     $DistDir\plugins" -ForegroundColor Green
+    Write-Host "     $WorkspaceDir" -ForegroundColor Green
     Write-Host ""
     Write-Host "  4. Click Save - plugins are now active"
     Write-Host ""
-    Write-Host "  Your role ($Role) gets: $plugins" -ForegroundColor Cyan
+    Write-Host "  Your role ($RoleName) plugins: $pluginList" -ForegroundColor Cyan
 }
 
-# --- Step 5: Summary ---
+# --- Step 6: Summary ---
 function Step-Summary {
-    param([string]$DistDir, [string]$Role)
+    param([string]$WorkspaceDir, [string]$DistDir, [string]$RoleName)
 
     Write-Host ""
     Write-Host "  ========================================" -ForegroundColor Green
     Write-Host "  Setup complete!" -ForegroundColor Green
     Write-Host "  ========================================" -ForegroundColor Green
     Write-Host ""
-    Write-Host "  Role:       $Role" -ForegroundColor White
-    Write-Host "  Dist:       $DistDir"
-    Write-Host "  Plugins:    $DistDir\plugins\"
+    Write-Host "  Role:       $RoleName" -ForegroundColor White
+    Write-Host "  Workspace:  $WorkspaceDir"
+    Write-Host "  Source:     $DistDir"
+    Write-Host ""
+    Write-Host "  Point Cowork Desktop to:" -ForegroundColor Cyan
+    Write-Host "  $WorkspaceDir" -ForegroundColor Green
     Write-Host ""
     Write-Host "  To update later:" -ForegroundColor Cyan
     Write-Host "    .\smorch-setup.ps1 -Update"
     Write-Host "    OR"
-    Write-Host "    cd $DistDir; git pull"
+    Write-Host "    cd $DistDir; git pull; .\smorch-setup.ps1 -Role $RoleName"
     Write-Host ""
 }
 
@@ -263,7 +312,25 @@ function Invoke-Update {
         Write-Warn "Pull failed. Check your internet connection."
     }
     Step-Verify $distDir
-    Write-Ok "Updated to latest. Cowork Desktop will pick up changes automatically."
+
+    # Detect current role from state file
+    $stateFile = Join-Path $distDir ".smorch-state"
+    $currentRole = ""
+    if (Test-Path $stateFile) {
+        $stateContent = Get-Content $stateFile -Raw
+        if ($stateContent -match 'CURRENT_ROLE="([^"]+)"') {
+            $currentRole = $Matches[1]
+        }
+    }
+
+    if ($currentRole) {
+        $workspaceDir = Join-Path $workspace "smorch-workspace"
+        Write-Info "Rebuilding workspace for role: $currentRole"
+        Step-BuildWorkspace $distDir $currentRole $workspaceDir
+        Write-Ok "Updated and rebuilt workspace. Cowork Desktop picks up changes automatically."
+    } else {
+        Write-Ok "Updated source. Re-run with -Role <role> to rebuild workspace."
+    }
 }
 
 # --- Main ---
@@ -301,10 +368,18 @@ if ($Role -notin $validRoles) {
 Write-Host "smorch-setup v$Version" -ForegroundColor White
 Write-Host "Role: $Role" -ForegroundColor Green
 
-# Execute steps
+# Detect workspace
 $workspace = Get-Workspace
-$distDir = Step-Download $workspace
+$distDir = Join-Path $workspace "smorch-dist"
+$workspaceDir = Join-Path $workspace "smorch-workspace"
+
+# Execute steps
+Step-Download $workspace
 Step-Verify $distDir
+Step-BuildWorkspace $distDir $Role $workspaceDir
 Step-CodePlugins $Role
-Step-CoworkInstructions $distDir $Role
-Step-Summary $distDir $Role
+Step-CoworkInstructions $workspaceDir $Role
+Step-Summary $workspaceDir $distDir $Role
+
+# Save role to state file for -Update
+Set-Content -Path (Join-Path $distDir ".smorch-state") -Value "CURRENT_ROLE=`"$Role`""

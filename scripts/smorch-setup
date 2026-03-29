@@ -5,12 +5,12 @@ set -eo pipefail
 # Works on: macOS (bash 3.2+), Linux, Windows (Git Bash)
 #
 # Quick install:
-#   curl -fsSL https://raw.githubusercontent.com/SMOrchestra-ai/smorch-dist/main/scripts/smorch-setup | bash
+#   curl -fsSL https://raw.githubusercontent.com/SMOrchestra-ai/smorch-dist/main/scripts/smorch-setup | bash -s -- --role gtm-eo
 #
 # Or clone first, then run:
 #   ./scripts/smorch-setup --role dev
 
-VERSION="1.0.0"
+VERSION="2.0.0"
 REPO_URL="https://github.com/SMOrchestra-ai/smorch-dist.git"
 
 RED='\033[0;31m'
@@ -38,6 +38,17 @@ sha256_check() {
     fi
 }
 
+# --- Role → plugin mapping ---
+get_role_plugins() {
+    local role="$1"
+    case "$role" in
+        gtm-eo)     echo "smorch-context-brain smorch-gtm-tools smorch-gtm-engine smorch-design mamoun-personal-branding smorch-gtm-scoring eo-microsaas-os" ;;
+        gtm-smo)    echo "smorch-context-brain smorch-gtm-tools smorch-gtm-engine smorch-design mamoun-personal-branding smorch-gtm-scoring" ;;
+        dev)        echo "smorch-dev smorch-dev-scoring" ;;
+        eo-student) echo "eo-microsaas-os smorch-dev smorch-dev-scoring" ;;
+    esac
+}
+
 # --- Detect workspace path ---
 detect_workspace() {
     if [[ -n "${SMORCH_WORKSPACE:-}" && -d "$SMORCH_WORKSPACE" ]]; then
@@ -47,7 +58,6 @@ detect_workspace() {
     elif [[ -d "$HOME/smorch-workspace" ]]; then
         echo "$HOME/smorch-workspace"
     else
-        # Default: create ~/Desktop/cowork-workspace on macOS, ~/smorch-workspace elsewhere
         if [[ "$(uname)" == "Darwin" ]]; then
             echo "$HOME/Desktop/cowork-workspace"
         else
@@ -68,19 +78,14 @@ ${BOLD}USAGE:${NC}
   smorch-setup --help            Show this help
 
 ${BOLD}ROLES:${NC}
-  gtm-eo       GTM-EO team (Cowork plugins only)
-  gtm-smo      GTM-SMO team (Cowork plugins only)
-  dev          Dev team (Cowork + 7 Claude Code tools)
-  eo-student   EO student (Cowork + 7 Claude Code tools)
+  gtm-eo       GTM-EO team (7 Cowork plugins)
+  gtm-smo      GTM-SMO team (6 Cowork plugins)
+  dev          Dev team (2 Cowork + 7 Code tools)
+  eo-student   EO student (3 Cowork + 7 Code tools)
 
 ${BOLD}EXAMPLES:${NC}
-  # First-time setup (GTM team member)
   smorch-setup --role gtm-eo
-
-  # Developer setup
   smorch-setup --role dev
-
-  # Pull latest updates
   smorch-setup --update
 
 ${BOLD}OVERRIDE WORKSPACE:${NC}
@@ -174,7 +179,52 @@ step_verify() {
     ok "All $checked plugins verified (SHA-256)."
 }
 
-# --- Step 3: Install Claude Code plugins (dev/eo-student only) ---
+# --- Step 3: Build role-specific workspace ---
+step_build_workspace() {
+    local dist_dir="$1"
+    local role="$2"
+    local workspace_dir="$3"
+
+    echo ""
+    echo -e "${CYAN}━━━ Step 3: Build Role Workspace ━━━${NC}"
+
+    local role_plugins
+    role_plugins=$(get_role_plugins "$role")
+
+    # Create workspace directory
+    mkdir -p "$workspace_dir"
+
+    # Clean existing plugins in workspace (keep other files)
+    if [[ -d "$workspace_dir" ]]; then
+        # Remove old plugin symlinks/copies
+        for item in "$workspace_dir"/*/; do
+            [[ -d "$item" ]] || continue
+            local name
+            name=$(basename "$item")
+            # Only remove directories that look like plugins
+            if [[ -d "$dist_dir/plugins/$name" ]]; then
+                rm -rf "$item"
+            fi
+        done
+    fi
+
+    # Copy ONLY the role's plugins
+    local count=0
+    for plugin in $role_plugins; do
+        local src="$dist_dir/plugins/$plugin"
+        if [[ -d "$src" ]]; then
+            cp -a "$src" "$workspace_dir/$plugin"
+            echo -e "  ${GREEN}Installed:${NC} $plugin"
+            count=$((count + 1))
+        else
+            warn "Plugin not found: $plugin (skipping)"
+        fi
+    done
+
+    ok "$count plugins installed for role '$role'."
+}
+
+# --- Step 4: Install Claude Code plugins (dev/eo-student only) ---
 step_code_plugins() {
     local role="$1"
 
@@ -185,7 +235,7 @@ step_code_plugins() {
     esac
 
     echo ""
-    echo -e "${CYAN}━━━ Step 3: Install Claude Code Dev Tools ━━━${NC}"
+    echo -e "${CYAN}━━━ Step 4: Install Claude Code Dev Tools ━━━${NC}"
 
     if ! command -v claude >/dev/null 2>&1; then
         warn "Claude CLI not found. Skipping Code plugin install."
@@ -217,31 +267,19 @@ step_code_plugins() {
     ok "Claude Code dev tools installed."
 }
 
-# --- Step 4: Show Cowork Desktop setup ---
+# --- Step 5: Show Cowork Desktop setup ---
 step_cowork_instructions() {
-    local dist_dir="$1"
+    local workspace_dir="$1"
     local role="$2"
 
     echo ""
-    echo -e "${CYAN}━━━ Step 4: Connect to Cowork Desktop ━━━${NC}"
+    echo -e "${CYAN}━━━ Step 5: Connect to Cowork Desktop ━━━${NC}"
     echo ""
 
-    # Determine which plugins this role gets
-    local plugins=""
-    case "$role" in
-        gtm-eo)
-            plugins="smorch-context-brain, smorch-gtm-tools, smorch-gtm-engine, smorch-design, mamoun-personal-branding, smorch-gtm-scoring, eo-microsaas-os"
-            ;;
-        gtm-smo)
-            plugins="smorch-context-brain, smorch-gtm-tools, smorch-gtm-engine, smorch-design, mamoun-personal-branding, smorch-gtm-scoring"
-            ;;
-        dev)
-            plugins="smorch-dev, smorch-dev-scoring"
-            ;;
-        eo-student)
-            plugins="eo-microsaas-os, smorch-dev, smorch-dev-scoring"
-            ;;
-    esac
+    local role_plugins
+    role_plugins=$(get_role_plugins "$role")
+    local plugin_list
+    plugin_list=$(echo "$role_plugins" | tr ' ' ', ')
 
     echo -e "  ${BOLD}To activate plugins in Cowork Desktop:${NC}"
     echo ""
@@ -249,17 +287,18 @@ step_cowork_instructions() {
     echo -e "  2. Go to ${BOLD}Customize > Workspace${NC}"
     echo -e "  3. Set workspace path to:"
     echo ""
-    echo -e "     ${GREEN}${dist_dir}/plugins${NC}"
+    echo -e "     ${GREEN}${workspace_dir}${NC}"
     echo ""
     echo -e "  4. Click ${BOLD}Save${NC} — plugins are now active"
     echo ""
-    echo -e "  ${CYAN}Your role (${role}) gets:${NC} $plugins"
+    echo -e "  ${CYAN}Your role (${role}) plugins:${NC} $plugin_list"
 }
 
-# --- Step 5: Summary ---
+# --- Step 6: Summary ---
 step_summary() {
-    local dist_dir="$1"
-    local role="$2"
+    local workspace_dir="$1"
+    local dist_dir="$2"
+    local role="$3"
 
     echo ""
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -267,17 +306,20 @@ step_summary() {
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
     echo -e "  Role:       ${BOLD}$role${NC}"
-    echo -e "  Dist:       $dist_dir"
-    echo -e "  Plugins:    $dist_dir/plugins/"
+    echo -e "  Workspace:  $workspace_dir"
+    echo -e "  Source:     $dist_dir"
+    echo ""
+    echo -e "  ${CYAN}Point Cowork Desktop to:${NC}"
+    echo -e "  ${GREEN}${workspace_dir}${NC}"
     echo ""
     echo -e "  ${CYAN}To update later:${NC}"
     echo -e "    smorch-setup --update"
     echo -e "    ${YELLOW}OR${NC}"
-    echo -e "    cd $dist_dir && git pull"
+    echo -e "    cd $dist_dir && git pull && smorch-setup --role $role"
     echo ""
 }
 
-# --- Update only (no role needed) ---
+# --- Update only ---
 cmd_update() {
     local workspace
     workspace=$(detect_workspace)
@@ -292,7 +334,22 @@ cmd_update() {
     info "Pulling latest from smorch-dist..."
     git -C "$dist_dir" pull origin main 2>&1
     step_verify "$dist_dir"
-    ok "Updated to latest. Cowork Desktop will pick up changes automatically."
+
+    # Detect current role from state file
+    local state_file="$dist_dir/.smorch-state"
+    local current_role=""
+    if [[ -f "$state_file" ]]; then
+        current_role=$(grep '^CURRENT_ROLE=' "$state_file" 2>/dev/null | cut -d= -f2 | tr -d '"')
+    fi
+
+    if [[ -n "$current_role" ]]; then
+        local workspace_dir="$workspace/smorch-workspace"
+        info "Rebuilding workspace for role: $current_role"
+        step_build_workspace "$dist_dir" "$current_role" "$workspace_dir"
+        ok "Updated and rebuilt workspace. Cowork Desktop picks up changes automatically."
+    else
+        ok "Updated source. Re-run with --role <role> to rebuild workspace."
+    fi
 }
 
 # --- Main ---
@@ -352,14 +409,19 @@ main() {
     # Detect workspace
     local workspace
     workspace=$(detect_workspace)
+    local dist_dir="$workspace/smorch-dist"
+    local workspace_dir="$workspace/smorch-workspace"
 
     # Execute steps
-    local dist_dir="$workspace/smorch-dist"
     step_download "$workspace"
     step_verify "$dist_dir"
+    step_build_workspace "$dist_dir" "$role" "$workspace_dir"
     step_code_plugins "$role"
-    step_cowork_instructions "$dist_dir" "$role"
-    step_summary "$dist_dir" "$role"
+    step_cowork_instructions "$workspace_dir" "$role"
+    step_summary "$workspace_dir" "$dist_dir" "$role"
+
+    # Save role to state file for --update
+    echo "CURRENT_ROLE=\"$role\"" > "$dist_dir/.smorch-state"
 }
 
 main "$@"
