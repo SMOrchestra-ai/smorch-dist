@@ -2,7 +2,7 @@
 # Works on: Windows PowerShell 5.1+, PowerShell Core 7+
 #
 # Quick install (run in PowerShell):
-#   irm https://raw.githubusercontent.com/SMOrchestra-ai/smorch-dist/main/scripts/smorch-setup.ps1 | iex
+#   irm https://raw.githubusercontent.com/SMOrchestra-ai/smorch-dist/main/scripts/smorch-setup.ps1 -OutFile smorch-setup.ps1; .\smorch-setup.ps1 -Role dev
 #
 # Or clone first, then run:
 #   .\scripts\smorch-setup.ps1 -Role dev
@@ -133,8 +133,9 @@ function Step-Verify {
 
     $failures = 0
     $checked = 0
-    Get-Content $manifest | ForEach-Object {
-        if ($_ -match '^(\S+)\s+(.+)$') {
+    $lines = Get-Content $manifest
+    foreach ($line in $lines) {
+        if ($line -match '^(\S+)\s+(.+)$') {
             $expectedHash = $Matches[1]
             $filename = $Matches[2]
             $filePath = Join-Path $DistDir "dist\$filename"
@@ -142,9 +143,9 @@ function Step-Verify {
                 $actualHash = (Get-FileHash -Path $filePath -Algorithm SHA256).Hash.ToLower()
                 if ($expectedHash -ne $actualHash) {
                     Write-Host "  FAIL $filename" -ForegroundColor Red
-                    $script:failures++
+                    $failures++
                 }
-                $script:checked++
+                $checked++
             }
         }
     }
@@ -258,6 +259,9 @@ function Invoke-Update {
 
     Write-Info "Pulling latest from smorch-dist..."
     git -C $distDir pull origin main 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warn "Pull failed. Check your internet connection."
+    }
     Step-Verify $distDir
     Write-Ok "Updated to latest. Cowork Desktop will pick up changes automatically."
 }
