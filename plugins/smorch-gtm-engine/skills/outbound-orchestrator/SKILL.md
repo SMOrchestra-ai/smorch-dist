@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:0e14ea2c -->
+<!-- dist:2026-03-29:7a1c09a8 -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -289,30 +289,7 @@ CHECK 8: PDPL compliance verified for this region? → VERIFY before sending
 - GHL: tag `Compliance_OptOut`, remove from all workflows
 - n8n: propagation workflow handles cross-platform sync
 
-## Signal Scoring Matrix
-
-| Signal | Channel | Base Points | Compound Bonus |
-|--------|---------|------------|----------------|
-| Email opened | Instantly | +1 | +2 if within 24hr of LinkedIn touch |
-| Email link clicked | Instantly | +2 | — |
-| Email replied | Instantly | +8 | — |
-| LinkedIn profile viewed | HeyReach | +1 | +2 if within 24hr of email open |
-| CR accepted | HeyReach | +3 | +3 if within 24hrs of send |
-| LinkedIn message reply | HeyReach | +8 | — |
-| InMail reply | HeyReach | +6 | — |
-| WhatsApp read | GHL | +1 | — |
-| WhatsApp reply | GHL | +8 | — |
-| Website visit | n8n webhook | +2 | +3 if within 48hr of outbound touch |
-| Form submitted | GHL | +10 | — |
-| Meeting booked | GHL | +10 | — |
-| Content downloaded | Website | +4 | +2 if after outbound touch |
-
-**Compound detection:** Signals from DIFFERENT channels within 48 hours = temporal cluster = higher intent. Always check for compound patterns before scoring.
-
-**Score decay:** Signals older than 14 days lose 50% value. Signals older than 30 days lose 80%. Signals older than 90 days = 0 (signal-to-trust-gtm Hard Stop Rule 2).
-
-**Routing thresholds:** ≥7 = HOT | 4-6 = WARM | <4 = COLD
-
+<!-- [Compiled: methodology section stripped — SMOrchestra.ai proprietary] -->
 ## Unified Lead Record (GHL Source of Truth)
 
 Every lead across all channels should have this data maintained in GHL:

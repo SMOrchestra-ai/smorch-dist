@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:0e14ea2c -->
+<!-- dist:2026-03-29:7a1c09a8 -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -65,55 +65,7 @@ Fields: prospect_id, company_name, fit_status, signal_type, signal_subtype, sign
 ### 3. Signal Taxonomy (for wedge-generator)
 JSON with intent_signals[] and trust_signals[], each containing: prospect_id, company_name, signal_subtype, signal_text, signal_age_days, signal_source, wedge_priority
 
-## Fit Validation Logic
-
-### ICP Fit Criteria Summary
-
-| ICP | Size | Geography | Industry | Revenue |
-|-----|------|-----------|----------|---------|
-| MENA SaaS | 5-50 employees | UAE, Saudi, Egypt, Qatar, Bahrain, Kuwait, Oman, Jordan, Lebanon | B2B SaaS | $200k-$5M ARR |
-| US Real Estate | 10-100 agents | United States | Residential RE | $2M-$50M commission + CRM required |
-| MENA Beauty | 2-20 staff | UAE, Saudi Arabia | Botox/fillers/laser/skincare | $300k-$3M annual |
-| US eCommerce | 3-50 employees | United States | DTC eCommerce | $500k-$10M, physical goods, Shopify/WooCommerce/Magento |
-
-**Detailed validation functions by ICP**: Read `references/fit-criteria-by-icp.md`
-
-## Signal Classification Logic
-
-### Trust vs Intent Decision Tree (summary)
-
-```
-Signal → Active problem indication? → YES: Intent (Active Problem)
-       → Solution research behavior? → YES: Intent (Solution Research)
-       → Procurement signal?         → YES: Intent (Procurement)
-       → Urgency indicator?          → YES: Intent (Urgency)
-       → Community engagement?       → YES: Trust (Community)
-       → Authority building?         → YES: Trust (Authority)
-       → Visibility action?          → YES: Trust (Visibility)
-       → None matched                → No signal detected
-```
-
-### Key Rule: Intent > Trust (Hard Stop Rule 4)
-When a signal could be classified as either, Intent takes priority (higher buying readiness).
-
-**Full classification patterns with keywords and examples**: Read `references/signal-classification-tables.md`
-
-## Signal Age Validation (Hard Stop Rule 2)
-
-- **Fresh (<90 days)**: Proceed to campaign
-- **Stale (>90 days)**: EXCLUDED, no exceptions
-
-Rationale: B2B buying cycles are 30-90 days. Stale signals mean someone else already reached out, or the pain evolved/got solved.
-
-## Signal Hierarchy Integration
-
-This skill validates the complete taxonomy chain:
-
-```
-Fit → Trigger → Signal Type → Signal Subtype → Wedge
-```
-
-What gets passed to wedge-generator: Validated prospects (Fit PASS + Fresh signals) with Signal Type, Subtype, and raw text for wedge customization.
+<!-- [Compiled: Signal detection framework, fit criteria, and classification logic stripped — SMOrchestra.ai proprietary] -->
 
 ## Error Handling
 

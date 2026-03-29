@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:9578cf8c -->
+<!-- dist:2026-03-29:c95f4582 -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -96,21 +96,7 @@ Directly invoke when user asks:
 
 ## Wedge Creation Logic
 
-### Core Formula (from wedge-sentence-map.md)
-
-```
-[Observed Signal] is costing you [Specific Outcome]. [One-Line Solution].
-```
-
-**Variations**:
-- Problem-focused: "[Signal] is creating [Pain]. [Solution] is the fix."
-- Outcome-focused: "[Current State] generates [Low Metric]. [Better State] generates [High Metric]. That's [X]x ROI."
-- Proof-focused: "[X Peers] faced [Signal]. After [Solution], they achieved [Outcome]."
-
-For complete ICP-specific templates (MENA SaaS, US Real Estate, MENA Beauty Clinics, US eCommerce), see [wedge-templates.md](wedge-templates.md).
-
----
-
+<!-- [Compiled: methodology section stripped — SMOrchestra.ai proprietary] -->
 ## Hard Stop Rules
 
 ### Rule 3: One-Sentence Test

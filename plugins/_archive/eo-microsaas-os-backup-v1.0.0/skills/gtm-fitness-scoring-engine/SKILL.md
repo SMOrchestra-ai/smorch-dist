@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:9578cf8c -->
+<!-- dist:2026-03-29:c95f4582 -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -258,13 +258,7 @@ This is the heart of the scoring engine. Each cell (0-3) determines how much a q
 
 For complete scoring formulas, upstream bonus calculations, strategy path bonus matrix, and upstream-to-motion fit mapping, see `scoring-rubrics.md`.
 
-### Composite Score Formula (per motion)
-
-```
-composite = (fit x 0.4) + (readiness x 0.3) + (mena x 0.3)
-Range: 0.0 to 10.0
-```
-
+<!-- [Compiled: methodology section stripped — SMOrchestra.ai proprietary] -->
 ### Motion Tier Assignment
 
 | Tier | Composite Score | Action | Meaning |

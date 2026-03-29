@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:624f013c -->
+<!-- dist:2026-03-29:ea6bddf5 -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -871,57 +871,8 @@ Strong: "Independent brokers in MENA primarily communicate via WhatsApp and pref
 
 ## AI SCORING ARCHITECTURE
 
-### Universal Free-Text Rubric
-
-Every free-text question in this scorecard uses a 5 (or 6-10 variant) point scale with consistent criteria:
-
-| Score | Label | Definition |
-|-------|-------|-----------|
-| **0** | Blank/Irrelevant | No answer provided or completely off-topic |
-| **1** | Generic | Could apply to any business; no specificity; vague assertions |
-| **2** | Directional | Right direction but vague; missing names, numbers, evidence; statements without support |
-| **3** | Specific | Named entities, some numbers, clear direction; usable but not sharp; could be sharper |
-| **4** | Sharp | Specific, evidence-backed, internally consistent; would guide action; could be used in materials |
-| **5** | Expert | Could be used as-is in pitch deck, campaign, or spec; vivid, memorable, actionable |
-| **6-10** | Variants | Some questions have 6, 8, or 10-point scales; same logic applies with finer gradation |
-
-**Axis of Evaluation (all free-text):**
-
-Every free-text answer is evaluated on three axes:
-
-1. **Specificity** — Real, named things vs. generic platitudes
-   - Score 1: "Business owners"
-   - Score 3: "Real estate brokers"
-   - Score 5: "Independent real estate brokers in Dubai managing 10-30 listings"
-
-2. **Evidence Quality** — Real-world data, conversations, research vs. assumptions
-   - Score 1: "I think they have this problem"
-   - Score 3: "Talked to 3 brokers who mentioned they use multiple tools"
-   - Score 5: "5 broker interviews revealed they lose 40% of leads; I observed WhatsApp group with 200+ untracked messages; competitor X charges $300/month and has 0 solo broker users"
-
-3. **Internal Consistency** — Alignment with previous answers and logic
-   - Score 1: Contradicts earlier statements or illogical
-   - Score 3: Generally consistent but one claim seems unsupported
-   - Score 5: All claims align, evidence is complementary, narrative is coherent
-
----
-
-### Question-Specific Rubrics
-
-Each question has a detailed rubric in the Question Set section above. AI scoring process:
-
-1. **Read the answer** against the rubric
-2. **Assess on all three axes** (specificity, evidence, consistency)
-3. **Assign base score** from rubric
-4. **Check for bonuses/penalties:**
-   - MENA-specific references: +1 point
-   - Multiple evidence types: +1 point
-   - Contradicts upstream answer (from other sections): -1 point
-   - Quantified claim (numbers, timelines): no automatic bonus, but required for higher scores
-5. **Cap at question max** (don't exceed point ceiling)
-
----
-
+<!-- [Compiled: methodology section stripped — SMOrchestra.ai proprietary] -->
+<!-- [Compiled: methodology section stripped — SMOrchestra.ai proprietary] -->
 ### Cross-Scorecard Consistency Engine
 
 This scorecard feeds into Scorecard 2 (ICP Clarity), Scorecard 3 (Market Attractiveness), Scorecard 4 (Strategy Selector), and Scorecard 5 (GTM Fitness).

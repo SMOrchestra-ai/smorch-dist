@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:0e14ea2c -->
+<!-- dist:2026-03-29:7a1c09a8 -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -62,40 +62,7 @@ The core thesis: relationship-based selling is a tax on growth. Signal-based tru
 | smorch-skill-creator | Skill creation and optimization with enforced naming validation |
 | lead-research-assistant | Lead identification with ICP-matched contact strategies |
 
-## Signal-to-Trust Framework
-
-The plugin implements the complete Signal-to-Trust GTM methodology:
-
-**Quarterly → Monthly → Weekly → Daily** campaign hierarchy where each level derives from the one above (domino validation).
-
-**Trust Engineering Thesis:** MENA isn't a relationship market. It's a trust market. Trust is engineerable. Every asset activates psychological triggers in a deliberate sequence, not random feature messaging.
-
-**7 Psychological Positioning Triggers** (priority order):
-1. Identity Threat (PRIMARY) — "Your competitors already have this"
-2. Costly Signal (PRIMARY) — Proof that can't be faked
-3. Temporal Window (PRIMARY) — "This window closes"
-4. Asymmetric Information — "You don't know what you don't know"
-5. In-Group/Out-Group — "The operators who get it vs. those who don't"
-6. Transformation Narrative — Before/after system proof
-7. Cognitive Fluency — Simple frameworks that stick
-
-**Hard Stop Rules:**
-1. Fit=Fail → STOP (no outreach regardless of signal strength)
-2. Signal > 90 days → STOP (stale signals produce bad outreach)
-3. Wedge must pass one-sentence test
-4. Intent signals > Trust signals in sequence order
-
-**3-Email Vulnerability Arc** (replaces 6-email volume approach):
-- E1 (Day 1): Origin Story — why you built this, personal vulnerability
-- E2 (Day 3): Trust-as-Science Confession — the "Still is" pattern
-- E3 (Day 6): System Proof — specific numbers, binary CTA
-
-**Silence Types** (why prospects aren't responding):
-- Proof Silence — they don't believe you can deliver
-- Cost Silence — they think it's too expensive
-- Trust Silence — they don't trust you yet
-- Timing Silence — it's not the right time
-- Clarity Silence — they don't understand what you do
+<!-- [Compiled: Signal-to-Trust framework summary stripped — SMOrchestra.ai proprietary] -->
 
 ## Scoring Gates
 

@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:9578cf8c -->
+<!-- dist:2026-03-29:c95f4582 -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -102,19 +102,7 @@ For detailed questions and guidance per section, see [questions.md](questions.md
 
 ## SCORING DIMENSIONS SUMMARY
 
-### Universal Free-Text Rubric
-
-Every free-text question uses a 5 (or 6-10 variant) point scale:
-
-| Score | Label | Definition |
-|-------|-------|-----------|
-| **0** | Blank/Irrelevant | No answer provided or completely off-topic |
-| **1** | Generic | Could apply to any business; no specificity |
-| **2** | Directional | Right direction but vague; missing names, numbers, evidence |
-| **3** | Specific | Named entities, some numbers, clear direction; usable but not sharp |
-| **4** | Sharp | Specific, evidence-backed, internally consistent; would guide action |
-| **5** | Expert | Could be used as-is in pitch deck, campaign, or spec; vivid, memorable, actionable |
-
+<!-- [Compiled: methodology section stripped — SMOrchestra.ai proprietary] -->
 ### Three Axes of Evaluation
 
 Every free-text answer is evaluated on:

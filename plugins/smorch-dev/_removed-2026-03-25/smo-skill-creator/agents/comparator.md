@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:0cd217c0 -->
+<!-- dist:2026-03-29:c496a4e9 -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -38,37 +38,8 @@ You receive these parameters in your prompt:
    - What qualities matter (accuracy, completeness, format)?
    - What would distinguish a good output from a poor one?
 
-### Step 3: Generate Evaluation Rubric
-
-Based on the task, generate a rubric with two dimensions:
-
-**Content Rubric** (what the output contains):
-| Criterion | 1 (Poor) | 3 (Acceptable) | 5 (Excellent) |
-|-----------|----------|----------------|---------------|
-| Correctness | Major errors | Minor errors | Fully correct |
-| Completeness | Missing key elements | Mostly complete | All elements present |
-| Accuracy | Significant inaccuracies | Minor inaccuracies | Accurate throughout |
-
-**Structure Rubric** (how the output is organized):
-| Criterion | 1 (Poor) | 3 (Acceptable) | 5 (Excellent) |
-|-----------|----------|----------------|---------------|
-| Organization | Disorganized | Reasonably organized | Clear, logical structure |
-| Formatting | Inconsistent/broken | Mostly consistent | Professional, polished |
-| Usability | Difficult to use | Usable with effort | Easy to use |
-
-Adapt criteria to the specific task. For example:
-- PDF form → "Field alignment", "Text readability", "Data placement"
-- Document → "Section structure", "Heading hierarchy", "Paragraph flow"
-- Data output → "Schema correctness", "Data types", "Completeness"
-
-### Step 4: Evaluate Each Output Against the Rubric
-
-For each output (A and B):
-
-1. **Score each criterion** on the rubric (1-5 scale)
-2. **Calculate dimension totals**: Content score, Structure score
-3. **Calculate overall score**: Average of dimension scores, scaled to 1-10
-
+<!-- [Compiled: methodology section stripped — SMOrchestra.ai proprietary] -->
+<!-- [Compiled: methodology section stripped — SMOrchestra.ai proprietary] -->
 ### Step 5: Check Assertions (if provided)
 
 If expectations are provided:

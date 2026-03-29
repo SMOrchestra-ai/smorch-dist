@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:68049e60 -->
+<!-- dist:2026-03-29:9d0600c9 -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -52,28 +52,7 @@ The Hook Model creates habit-forming products through 4 stages:
 
 ## Framework 2: Brendan Kane — Pattern Interrupt / Hook Points
 
-### 5 Hook Point Formulas
-
-1. **Contrarian Take:** "Everything you know about [topic] is wrong"
-   - Training use: Open every module with a belief-breaking statement
-   - Founder use: LinkedIn posts, YouTube thumbnails, cold email subject lines
-
-2. **Data Disruption:** "73% of MENA founders fail because..."
-   - Training use: Use data to break complacency mid-module
-   - Founder use: Authority content, lead magnets, webinar hooks
-
-3. **Behind-the-Curtain:** "Here's what actually happens when..."
-   - Training use: Show real client examples, real failures, real numbers
-   - Founder use: Build-in-Public content, case studies
-
-4. **Challenge/Dare:** "I bet you can't do this in 72 hours"
-   - Training use: 72-Hour Launch Commitment, weekly challenges
-   - Founder use: Community engagement, viral content
-
-5. **Story Hook:** "Last week, a founder in Dubai told me..."
-   - Training use: Open with Epiphany Bridge before every framework
-   - Founder use: Sales conversations, testimonial-driven content
-
+<!-- [Compiled: methodology section stripped — SMOrchestra.ai proprietary] -->
 ### The 3-Second Rule
 - You have 3 seconds to earn the next 30 seconds
 - You have 30 seconds to earn the next 3 minutes

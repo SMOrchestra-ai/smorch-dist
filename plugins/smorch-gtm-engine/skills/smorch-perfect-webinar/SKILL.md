@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:0e14ea2c -->
+<!-- dist:2026-03-29:7a1c09a8 -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -299,34 +299,7 @@ Single HTML file with:
 
 Score the deck against the 10-dimension rubric. Each dimension 0-10.
 
-### The 10-Dimension Rubric
-
-| # | Dimension | What to Score | Target |
-|---|-----------|--------------|--------|
-| 1 | Big Promise Spine | Clear promise? 3 withouts map to 3 myths? Offer ladders back? | 9+ |
-| 2 | Myth-to-Secret Architecture | 3 myths clearly stated and broken? Epiphany Bridge stories for each? | 9+ |
-| 3 | Emotional Arc | Hook-Story-Offer flow? Tension/release moments? Energy builds toward offer? | 8+ |
-| 4 | 4 Silent Killers Integration | All 4 addressed? Case studies map back? Offer addresses all 4? | 8+ |
-| 5 | Teaching vs Selling Balance | Matches the mode (Teach/Sell/Hybrid)? Tone consistent? Offer fits context? | 8+ |
-| 6 | Speaker Script Quality | ALL slides have notes? Natural delivery? Timing, pauses, stage directions? | 9+ |
-| 7 | Visual Design | Dark premium aesthetic? Consistent palette? Icons/shapes? No clutter? | 8+ |
-| 8 | Proof Architecture | Case studies framed correctly for mode? Before/after? Silent Killer mapping? | 8+ |
-| 9 | Offer-to-Secret Linkage | Each stack item links to a myth? "System that fixes what you learned" framing? Guarantee? | 9+ |
-| 10 | MENA Contextualization | Market-specific references? Cultural trust dynamics? Local stories? Language appropriate? | 8+ |
-
-**Scoring process:**
-1. Convert deck to PDF via LibreOffice
-2. Extract slide images via pdftoppm
-3. Run visual QA (fresh eyes inspection of every slide)
-4. Fix any issues (text clipping, low contrast icons, footer overlap, element collision)
-5. Re-render and verify fixes
-6. Score against rubric
-7. Present score table to user with justification per dimension
-
-**Target: 8.5+ weighted average.** If below 8.0, identify weakest dimensions and fix before delivery.
-
----
-
+<!-- [Compiled: methodology section stripped — SMOrchestra.ai proprietary] -->
 ## PHASE 7: DELIVERY
 
 Present all deliverables with file links:
@@ -364,17 +337,7 @@ Read these before starting each phase:
 
 ---
 
-## HARD STOP RULES
-
-These kill the webinar. Check before every phase:
-
-1. **No Big Promise = no deck.** If the Big Promise isn't crystal clear with 3 withouts mapped to 3 myths, STOP.
-2. **No named framework per secret = broken architecture.** Every secret MUST have a named framework reveal.
-3. **No story per myth = no emotional proof.** Each myth needs an Epiphany Bridge story.
-4. **No offer-to-secret linkage = disconnected stack.** Every stack item must link to a myth.
-5. **Mode mismatch = audience trust broken.** Teaching event with hard sell = disaster. Sales event with no CTA = wasted opportunity.
-6. **No speaker scripts = unprepared speaker.** Every slide needs exact dialogue, timing, pauses.
-7. **Icons rendered without # prefix = black icons on dark background.** ALWAYS prefix colors with # for react-icons rendering.
+<!-- [Compiled: Perfect Webinar hard stop rules stripped — SMOrchestra.ai proprietary] -->
 
 ---
 

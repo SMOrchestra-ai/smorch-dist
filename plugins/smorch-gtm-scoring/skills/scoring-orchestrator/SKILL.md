@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:368098d8 -->
+<!-- dist:2026-03-29:7cf00f6f -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -6,9 +6,9 @@
 ---
 name: scoring-orchestrator
 description: >-
-  Quality gate for all SMOrch GTM deliverables. Routes to 6 scoring systems
+  Quality gate for all SMOrch GTM deliverables. Routes to 7 scoring systems
   (campaign strategy, offer/positioning, copywriting, social media, YouTube,
-  LinkedIn branding) and computes composite Campaign Health scores. Triggers on
+  LinkedIn branding, scorecard/lead magnet effectiveness) and computes composite Campaign Health scores. Triggers on
   "score this", "rate this", "quality check", "is this ready to ship", "score my
   campaign", "score my email", "score my post", "how good is this", "grade this",
   "scoring", "quality gate", "ready to deploy", "ship check". Also triggers when
@@ -44,6 +44,7 @@ When the user presents content for scoring, determine which system applies:
 | Organic social post (LinkedIn/Twitter/Instagram) | System 4: Social Media | social-media-scorer |
 | YouTube thumbnail, title, script, or description | System 5: YouTube | youtube-scorer |
 | LinkedIn personal brand post (English B2B or Arabic EO) | System 6: LinkedIn Branding | linkedin-branding-scorer |
+| Lead magnet, scorecard, quiz, self-assessment, diagnostic tool, ROI calculator | System 7: Scorecard Effectiveness | scorecard-effectiveness |
 
 If the content spans multiple systems (e.g., "score my entire campaign"), run each applicable scorer and then compute the composite.
 

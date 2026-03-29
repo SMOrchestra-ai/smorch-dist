@@ -1,4 +1,4 @@
-<!-- dist:2026-03-28:0e14ea2c -->
+<!-- dist:2026-03-29:7a1c09a8 -->
 <!-- Copyright SMOrchestra.ai. All rights reserved. Proprietary and confidential. -->
 <!-- COMPILED: Methodology source stripped. Execute skills as provided. -->
 
@@ -67,49 +67,7 @@ Direct invoke: "Create wedges from signals", "Generate messaging for [signal]", 
 - Rule 3 (One-sentence test): ✓ | Rule 4 (Intent > Trust): ✓
 ```
 
-## Core Wedge Formula
-
-```
-[Observed Signal] is costing you [Specific Outcome]. [One-Line Solution].
-```
-
-**Variations**:
-- Problem-focused: "[Signal] is creating [Pain]. [Solution] is the fix."
-- Outcome-focused: "[Current State] generates [Low Metric]. [Better State] generates [High Metric]. That's [X]x ROI."
-- Proof-focused: "[X Peers] faced [Signal]. After [Solution], they achieved [Outcome]."
-
-**Full ICP-specific templates**: Read `references/wedge-templates-by-icp.md`
-
-## Hard Stop Rules
-
-### Rule 3: One-Sentence Test
-Every wedge must pass 4 checks:
-1. **Single sentence** (max 1 period/exclamation/question mark)
-2. **No hedging** ("might", "could", "possibly", "perhaps")
-3. **No vague language** ("better results", "improvement", "optimization")
-4. **Contains specifics** (numbers, %, $, Xx multiplier)
-
-**PASS**: "Your sales data across 7 tools is creating decision paralysis. Unified dashboard = predictable revenue."
-**FAIL**: "You might be considering CRM alternatives. We could potentially help." (hedging)
-**FAIL**: "You want better sales results." (vague, no specifics)
-
-### Rule 4: Intent > Trust
-When both signal types present for a prospect, Intent takes priority (active pain > passive engagement).
-
-**Full validation logic and examples**: Read `references/hard-stop-rules-detail.md`
-
-## Weekly Wedge Strategies
-
-### Strategy A: Different Angles (Default)
-3 wedges from same monthly theme, each hitting different angle: identify problem → amplify cost → provide proof
-
-### Strategy B: Sequential Story
-3 wedges building narrative arc: story opening → data reveal → resolution
-
-### Strategy C: A/B/C Variants
-Same week, 3 psychology variants: data-driven → story-driven → peer-driven
-
-**Full strategy execution examples with geographic adaptation**: Read `references/strategy-and-adaptation.md`
+<!-- [Compiled: Wedge formula, hard stop rules, and weekly strategies stripped — SMOrchestra.ai proprietary] -->
 
 ## Error Handling
 
