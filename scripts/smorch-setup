@@ -1,0 +1,363 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# smorch-setup — One-command setup for SMOrchestra skills
+# Works on: macOS (bash 3.2+), Linux, Windows (Git Bash)
+#
+# Quick install:
+#   curl -fsSL https://raw.githubusercontent.com/SMOrchestra-ai/smorch-dist/main/scripts/smorch-setup | bash
+#
+# Or clone first, then run:
+#   ./scripts/smorch-setup --role dev
+
+VERSION="1.0.0"
+REPO_URL="https://github.com/SMOrchestra-ai/smorch-dist.git"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+# --- Helpers ---
+info()  { echo -e "${CYAN}[INFO]${NC} $1"; }
+ok()    { echo -e "${GREEN}[OK]${NC} $1"; }
+warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
+fail()  { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
+
+# Cross-platform sha256
+sha256_check() {
+    if command -v shasum >/dev/null 2>&1; then
+        shasum -a 256 "$1" | cut -d' ' -f1
+    elif command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$1" | cut -d' ' -f1
+    else
+        echo "skip"
+    fi
+}
+
+# --- Detect workspace path ---
+detect_workspace() {
+    if [[ -n "${SMORCH_WORKSPACE:-}" && -d "$SMORCH_WORKSPACE" ]]; then
+        echo "$SMORCH_WORKSPACE"
+    elif [[ -d "$HOME/Desktop/cowork-workspace" ]]; then
+        echo "$HOME/Desktop/cowork-workspace"
+    elif [[ -d "$HOME/smorch-workspace" ]]; then
+        echo "$HOME/smorch-workspace"
+    else
+        # Default: create ~/Desktop/cowork-workspace on macOS, ~/smorch-workspace elsewhere
+        if [[ "$(uname)" == "Darwin" ]]; then
+            echo "$HOME/Desktop/cowork-workspace"
+        else
+            echo "$HOME/smorch-workspace"
+        fi
+    fi
+}
+
+# --- Show help ---
+show_help() {
+    cat <<EOF
+${BOLD}smorch-setup${NC} v${VERSION} — One-command SMOrchestra skill installer
+
+${BOLD}USAGE:${NC}
+  smorch-setup --role <role>     Download + install for your role
+  smorch-setup --list            Show available roles
+  smorch-setup --update          Pull latest updates only
+  smorch-setup --help            Show this help
+
+${BOLD}ROLES:${NC}
+  gtm-eo       GTM-EO team (Cowork plugins only)
+  gtm-smo      GTM-SMO team (Cowork plugins only)
+  dev          Dev team (Cowork + 7 Claude Code tools)
+  eo-student   EO student (Cowork + 7 Claude Code tools)
+
+${BOLD}EXAMPLES:${NC}
+  # First-time setup (GTM team member)
+  smorch-setup --role gtm-eo
+
+  # Developer setup
+  smorch-setup --role dev
+
+  # Pull latest updates
+  smorch-setup --update
+
+${BOLD}OVERRIDE WORKSPACE:${NC}
+  export SMORCH_WORKSPACE=/your/path
+  smorch-setup --role dev
+
+EOF
+}
+
+# --- Show role list ---
+show_list() {
+    echo -e "${BOLD}Available Roles:${NC}"
+    echo ""
+    echo -e "${GREEN}gtm-eo${NC}       GTM-EO team"
+    echo -e "  Cowork (7): smorch-context-brain, smorch-gtm-tools, smorch-gtm-engine,"
+    echo -e "              smorch-design, mamoun-personal-branding, smorch-gtm-scoring,"
+    echo -e "              eo-microsaas-os"
+    echo -e "  Code:       None"
+    echo ""
+    echo -e "${GREEN}gtm-smo${NC}      GTM-SMO team"
+    echo -e "  Cowork (6): smorch-context-brain, smorch-gtm-tools, smorch-gtm-engine,"
+    echo -e "              smorch-design, mamoun-personal-branding, smorch-gtm-scoring"
+    echo -e "  Code:       None"
+    echo ""
+    echo -e "${GREEN}dev${NC}          Developer team"
+    echo -e "  Cowork (2): smorch-dev, smorch-dev-scoring"
+    echo -e "  Code (7):   typescript-lsp, pyright-lsp, rust-analyzer-lsp, gopls-lsp,"
+    echo -e "              code-review, frontend-design, github"
+    echo ""
+    echo -e "${GREEN}eo-student${NC}   EO student"
+    echo -e "  Cowork (3): eo-microsaas-os, smorch-dev, smorch-dev-scoring"
+    echo -e "  Code (7):   typescript-lsp, pyright-lsp, rust-analyzer-lsp, gopls-lsp,"
+    echo -e "              code-review, frontend-design, github"
+}
+
+# --- Step 1: Download / Clone ---
+step_download() {
+    local workspace="$1"
+    local dist_dir="$workspace/smorch-dist"
+
+    echo ""
+    echo -e "${CYAN}━━━ Step 1: Download SMOrchestra Skills ━━━${NC}"
+
+    if [[ -d "$dist_dir/.git" ]]; then
+        info "smorch-dist found at $dist_dir — pulling latest..."
+        git -C "$dist_dir" pull origin main 2>&1 || warn "Pull failed. Using existing version."
+        ok "Updated to latest version."
+    else
+        info "Cloning smorch-dist to $dist_dir..."
+        mkdir -p "$workspace"
+        git clone "$REPO_URL" "$dist_dir" 2>&1
+        ok "Downloaded smorch-dist."
+    fi
+
+    echo "$dist_dir"
+}
+
+# --- Step 2: Verify integrity ---
+step_verify() {
+    local dist_dir="$1"
+
+    echo ""
+    echo -e "${CYAN}━━━ Step 2: Verify Plugin Integrity ━━━${NC}"
+
+    local manifest="$dist_dir/dist/.manifest"
+    if [[ ! -f "$manifest" ]]; then
+        warn "No integrity manifest found. Skipping verification."
+        return
+    fi
+
+    local failures=0
+    local checked=0
+    while IFS='  ' read -r expected_hash filename; do
+        [[ -z "$expected_hash" ]] && continue
+        [[ -z "$filename" ]] && continue
+        local actual_hash
+        actual_hash=$(sha256_check "$dist_dir/dist/$filename")
+        if [[ "$actual_hash" == "skip" ]]; then
+            warn "sha256 tool not available. Skipping verification."
+            return
+        fi
+        if [[ "$expected_hash" != "$actual_hash" ]]; then
+            echo -e "  ${RED}FAIL${NC} $filename"
+            failures=$((failures + 1))
+        fi
+        checked=$((checked + 1))
+    done < "$manifest"
+
+    if [[ $failures -gt 0 ]]; then
+        fail "$failures plugin(s) failed integrity check. Re-run or contact admin."
+    fi
+
+    ok "All $checked plugins verified (SHA-256)."
+}
+
+# --- Step 3: Install Claude Code plugins (dev/eo-student only) ---
+step_code_plugins() {
+    local role="$1"
+
+    # Only dev and eo-student roles get Code plugins
+    case "$role" in
+        dev|eo-student) ;;
+        *) return ;;
+    esac
+
+    echo ""
+    echo -e "${CYAN}━━━ Step 3: Install Claude Code Dev Tools ━━━${NC}"
+
+    if ! command -v claude >/dev/null 2>&1; then
+        warn "Claude CLI not found. Skipping Code plugin install."
+        warn "Install Claude Code first, then re-run this script."
+        return
+    fi
+
+    echo -e "${BLUE}  Language Servers:${NC}"
+    for p in typescript-lsp pyright-lsp rust-analyzer-lsp gopls-lsp; do
+        echo -e "  Installing ${p}@claude-plugins-official..."
+        if claude /plugin install "${p}@claude-plugins-official" 2>/dev/null; then
+            echo -e "    ${GREEN}OK${NC}"
+        else
+            echo -e "    ${YELLOW}SKIP${NC} (already installed or unavailable)"
+        fi
+    done
+
+    echo ""
+    echo -e "${BLUE}  Dev Tools:${NC}"
+    for p in code-review frontend-design github; do
+        echo -e "  Installing ${p}@claude-plugins-official..."
+        if claude /plugin install "${p}@claude-plugins-official" 2>/dev/null; then
+            echo -e "    ${GREEN}OK${NC}"
+        else
+            echo -e "    ${YELLOW}SKIP${NC} (already installed or unavailable)"
+        fi
+    done
+
+    ok "Claude Code dev tools installed."
+}
+
+# --- Step 4: Show Cowork Desktop setup ---
+step_cowork_instructions() {
+    local dist_dir="$1"
+    local role="$2"
+
+    echo ""
+    echo -e "${CYAN}━━━ Step 4: Connect to Cowork Desktop ━━━${NC}"
+    echo ""
+
+    # Determine which plugins this role gets
+    local plugins=""
+    case "$role" in
+        gtm-eo)
+            plugins="smorch-context-brain, smorch-gtm-tools, smorch-gtm-engine, smorch-design, mamoun-personal-branding, smorch-gtm-scoring, eo-microsaas-os"
+            ;;
+        gtm-smo)
+            plugins="smorch-context-brain, smorch-gtm-tools, smorch-gtm-engine, smorch-design, mamoun-personal-branding, smorch-gtm-scoring"
+            ;;
+        dev)
+            plugins="smorch-dev, smorch-dev-scoring"
+            ;;
+        eo-student)
+            plugins="eo-microsaas-os, smorch-dev, smorch-dev-scoring"
+            ;;
+    esac
+
+    echo -e "  ${BOLD}To activate plugins in Cowork Desktop:${NC}"
+    echo ""
+    echo -e "  1. Open Claude Desktop (Cowork)"
+    echo -e "  2. Go to ${BOLD}Customize > Workspace${NC}"
+    echo -e "  3. Set workspace path to:"
+    echo ""
+    echo -e "     ${GREEN}${dist_dir}/plugins${NC}"
+    echo ""
+    echo -e "  4. Click ${BOLD}Save${NC} — plugins are now active"
+    echo ""
+    echo -e "  ${CYAN}Your role (${role}) gets:${NC} $plugins"
+}
+
+# --- Step 5: Summary ---
+step_summary() {
+    local dist_dir="$1"
+    local role="$2"
+
+    echo ""
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${GREEN}  Setup complete!${NC}"
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo -e "  Role:       ${BOLD}$role${NC}"
+    echo -e "  Dist:       $dist_dir"
+    echo -e "  Plugins:    $dist_dir/plugins/"
+    echo ""
+    echo -e "  ${CYAN}To update later:${NC}"
+    echo -e "    smorch-setup --update"
+    echo -e "    ${YELLOW}OR${NC}"
+    echo -e "    cd $dist_dir && git pull"
+    echo ""
+}
+
+# --- Update only (no role needed) ---
+cmd_update() {
+    local workspace
+    workspace=$(detect_workspace)
+    local dist_dir="$workspace/smorch-dist"
+
+    echo -e "${BOLD}smorch-setup${NC} — Updating skills..."
+
+    if [[ ! -d "$dist_dir/.git" ]]; then
+        fail "smorch-dist not found at $dist_dir. Run smorch-setup --role <role> first."
+    fi
+
+    info "Pulling latest from smorch-dist..."
+    git -C "$dist_dir" pull origin main 2>&1
+    step_verify "$dist_dir"
+    ok "Updated to latest. Cowork Desktop will pick up changes automatically."
+}
+
+# --- Main ---
+main() {
+    local role=""
+    local action="setup"
+
+    # Parse args
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --role|-r)    role="$2"; shift 2 ;;
+            --list|-l)    show_list; exit 0 ;;
+            --update|-u)  action="update"; shift ;;
+            --help|-h)    show_help; exit 0 ;;
+            --version|-v) echo "smorch-setup v${VERSION}"; exit 0 ;;
+            *)            warn "Unknown option: $1"; show_help; exit 1 ;;
+        esac
+    done
+
+    # --- Prerequisites ---
+    command -v git >/dev/null 2>&1 || fail "git is required. Install it: https://git-scm.com/downloads"
+
+    # --- Update mode ---
+    if [[ "$action" == "update" ]]; then
+        cmd_update
+        exit 0
+    fi
+
+    # --- Setup mode: require role ---
+    if [[ -z "$role" ]]; then
+        echo -e "${BOLD}smorch-setup${NC} v${VERSION} — SMOrchestra Skill Installer"
+        echo ""
+        echo -e "${RED}No role specified.${NC} Pick your role:"
+        echo ""
+        echo -e "  ${GREEN}smorch-setup --role gtm-eo${NC}       GTM-EO team"
+        echo -e "  ${GREEN}smorch-setup --role gtm-smo${NC}      GTM-SMO team"
+        echo -e "  ${GREEN}smorch-setup --role dev${NC}           Developer"
+        echo -e "  ${GREEN}smorch-setup --role eo-student${NC}    EO student"
+        echo ""
+        echo -e "  ${CYAN}smorch-setup --list${NC}              See what each role gets"
+        exit 1
+    fi
+
+    # Validate role
+    case "$role" in
+        gtm-eo|gtm-smo|dev|eo-student) ;;
+        *) fail "Unknown role: $role. Available: gtm-eo, gtm-smo, dev, eo-student" ;;
+    esac
+
+    echo -e "${BOLD}smorch-setup${NC} v${VERSION}"
+    echo -e "Role: ${GREEN}$role${NC}"
+
+    # Detect workspace
+    local workspace
+    workspace=$(detect_workspace)
+
+    # Execute steps
+    local dist_dir
+    dist_dir=$(step_download "$workspace")
+    step_verify "$dist_dir"
+    step_code_plugins "$role"
+    step_cowork_instructions "$dist_dir" "$role"
+    step_summary "$dist_dir" "$role"
+}
+
+main "$@"
