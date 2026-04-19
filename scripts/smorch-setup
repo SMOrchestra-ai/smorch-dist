@@ -44,8 +44,8 @@ get_role_plugins() {
     case "$role" in
         gtm-eo)     echo "smorch-context-brain smorch-gtm-tools smorch-gtm-engine smorch-design mamoun-personal-branding smorch-gtm-scoring eo-microsaas-os" ;;
         gtm-smo)    echo "smorch-context-brain smorch-gtm-tools smorch-gtm-engine smorch-design mamoun-personal-branding smorch-gtm-scoring" ;;
-        dev)        echo "smorch-dev smorch-dev-scoring" ;;
-        eo-student) echo "eo-microsaas-os smorch-dev smorch-dev-scoring" ;;
+        dev)        echo "smorch-dev smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED" ;;
+        eo-student) echo "eo-microsaas-os smorch-dev smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED" ;;
     esac
 }
 
@@ -111,12 +111,12 @@ show_list() {
     echo -e "  Code:       None"
     echo ""
     echo -e "${GREEN}dev${NC}          Developer team"
-    echo -e "  Cowork (2): smorch-dev, smorch-dev-scoring"
+    echo -e "  Cowork (2): smorch-dev, smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED"
     echo -e "  Code (7):   typescript-lsp, pyright-lsp, rust-analyzer-lsp, gopls-lsp,"
     echo -e "              code-review, frontend-design, github"
     echo ""
     echo -e "${GREEN}eo-student${NC}   EO student"
-    echo -e "  Cowork (3): eo-microsaas-os, smorch-dev, smorch-dev-scoring"
+    echo -e "  Cowork (3): eo-microsaas-os, smorch-dev, smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED"
     echo -e "  Code (7):   typescript-lsp, pyright-lsp, rust-analyzer-lsp, gopls-lsp,"
     echo -e "              code-review, frontend-design, github"
 }

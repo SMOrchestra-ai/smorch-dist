@@ -30,8 +30,8 @@ function Get-RolePlugins {
     switch ($RoleName) {
         "gtm-eo"     { return @("smorch-context-brain", "smorch-gtm-tools", "smorch-gtm-engine", "smorch-design", "mamoun-personal-branding", "smorch-gtm-scoring", "eo-microsaas-os") }
         "gtm-smo"    { return @("smorch-context-brain", "smorch-gtm-tools", "smorch-gtm-engine", "smorch-design", "mamoun-personal-branding", "smorch-gtm-scoring") }
-        "dev"        { return @("smorch-dev", "smorch-dev-scoring") }
-        "eo-student" { return @("eo-microsaas-os", "smorch-dev", "smorch-dev-scoring") }
+        "dev"        { return @("smorch-dev", "smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED") }
+        "eo-student" { return @("eo-microsaas-os", "smorch-dev", "smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED") }
     }
 }
 
@@ -87,12 +87,12 @@ function Show-List {
     Write-Host "  Code:       None"
     Write-Host ""
     Write-Host "dev" -ForegroundColor Green -NoNewline; Write-Host "          Developer team"
-    Write-Host "  Cowork (2): smorch-dev, smorch-dev-scoring"
+    Write-Host "  Cowork (2): smorch-dev, smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED"
     Write-Host "  Code (7):   typescript-lsp, pyright-lsp, rust-analyzer-lsp, gopls-lsp,"
     Write-Host "              code-review, frontend-design, github"
     Write-Host ""
     Write-Host "eo-student" -ForegroundColor Green -NoNewline; Write-Host "   EO student"
-    Write-Host "  Cowork (3): eo-microsaas-os, smorch-dev, smorch-dev-scoring"
+    Write-Host "  Cowork (3): eo-microsaas-os, smorch-dev, smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED"
     Write-Host "  Code (7):   typescript-lsp, pyright-lsp, rust-analyzer-lsp, gopls-lsp,"
     Write-Host "              code-review, frontend-design, github"
 }

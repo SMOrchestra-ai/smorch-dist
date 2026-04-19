@@ -93,12 +93,12 @@ function Show-List {
     Write-Host "  Code:       None"
     Write-Host ""
     Write-Host "Dev Team:" -ForegroundColor Green
-    Write-Host "  Cowork (2): smorch-dev, smorch-dev-scoring"
+    Write-Host "  Cowork (2): smorch-dev, smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED"
     Write-Host "  Code (7):   typescript-lsp, pyright-lsp, rust-analyzer-lsp, gopls-lsp,"
     Write-Host "              code-review, frontend-design, github"
     Write-Host ""
     Write-Host "EO Student:" -ForegroundColor Green
-    Write-Host "  Cowork (3): eo-microsaas-os, smorch-dev, smorch-dev-scoring"
+    Write-Host "  Cowork (3): eo-microsaas-os, smorch-dev, smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED"
     Write-Host "  Code (7):   typescript-lsp, pyright-lsp, rust-analyzer-lsp, gopls-lsp,"
     Write-Host "              code-review, frontend-design, github"
 }
@@ -137,13 +137,13 @@ switch ($Role) {
         Write-Host "=== Dev Team Setup ===" -ForegroundColor Green
         Write-Host ""
         Install-CodePlugins
-        Show-CoworkInstructions @("smorch-dev", "smorch-dev-scoring")
+        Show-CoworkInstructions @("smorch-dev", "smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED")
     }
     "eo-student" {
         Write-Host "=== EO Student Setup ===" -ForegroundColor Green
         Write-Host ""
         Install-CodePlugins
-        Show-CoworkInstructions @("eo-microsaas-os", "smorch-dev", "smorch-dev-scoring")
+        Show-CoworkInstructions @("eo-microsaas-os", "smorch-dev", "smorch-builders (scoring moved to new smorch-dev plugin) ARCHIVED")
     }
     "mamoun" {
         Write-Host "=== Mamoun (All Access) ===" -ForegroundColor Green
